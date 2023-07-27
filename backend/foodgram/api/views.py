@@ -1,15 +1,18 @@
+from api.serializers import (RecipeCreateSerializer, RecipeSerializer,
+                             TagSerializer, UserCreateSerializer,
+                             UserGetSerializer)
 from djoser.views import UserViewSet
+from recipes.models import Recipe, Tag
 from rest_framework.viewsets import ModelViewSet
-from recipes.models import Tag, Recipe
-from api.serializers import TagSerializer, RecipeSerializer, RecipeCreateSerializer, UserSerializer
-from .models import User
 
-from djoser.views import UserViewSet
+from .models import User
+from .permissions import IsCurrentOrAdminOrReadOnly
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserGetSerializer
+    permission_classes = (IsCurrentOrAdminOrReadOnly,)
 
 
 class TagViewSet(ModelViewSet):

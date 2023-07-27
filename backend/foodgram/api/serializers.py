@@ -1,11 +1,13 @@
+from django.core.validators import MaxLengthValidator, RegexValidator
+from djoser.serializers import UserSerializer
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
-from recipes.models import Tag, Recipe, RecipeIngredient, Ingredient
-from .models import User
 from rest_framework.validators import UniqueValidator
-from django.core.validators import RegexValidator, MaxLengthValidator
+
+from .models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         validators=[
             UniqueValidator(queryset=User.objects.all()),
@@ -34,13 +36,38 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'password',)
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password',)
         write_only_fields = ('password',)
 
     def validate_username(self, value):
         if value == "me":
             raise serializers.ValidationError("Нельзя использовать имя 'me'")
         return value
+
+    def to_representation(self, instance):
+        """Исключаем из ответа поле is_subscribed при регистрации."""
+        data = super().to_representation(instance)
+        if self.context.get('view').action == 'create':
+            data.pop('is_subscribed', None)
+        return data
+
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+class UserGetSerializer(UserSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name',)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -92,9 +119,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 recipe=instance,
                 ingredient=ingredient_data['ingredient'],
                 amount=ingredient_data['amount']
-            ).save()  # использовать boolcreate
+            ).save()
         return instance
 
     def to_representation(self, instance):
         # 2.30.07
         return super().to_representation(instance)
+
