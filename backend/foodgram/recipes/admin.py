@@ -9,7 +9,7 @@ class RecipeIngredient(admin.TabularInline):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'name', 'color', 'slug',)
 
 
 @admin.register(Recipe)
