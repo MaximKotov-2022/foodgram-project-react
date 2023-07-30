@@ -1,9 +1,10 @@
-from api.serializers import (RecipeCreateSerializer, RecipeSerializer,
+from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
                              TagSerializer, UserCreateSerializer,
                              UserGetSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from recipes.models import Recipe, Tag
+from recipes.models import Favorite, Ingredient, Recipe, Tag
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -60,16 +61,18 @@ class TagViewSet(ModelViewSet):
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
-    pass
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientGetSerializer
 
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
-            'recipeingredient_set__ingredient', 'tags'
+            'recipe_ingredients__ingredient', 'tags'
         ).all()
         return recipes
 
@@ -80,3 +83,28 @@ class RecipeViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(methods=['post', 'delete'], detail=True, url_path='favorite', permission_classes=[IsAuthenticated])
+    def favorites(self, request, pk=None):
+        if request.method == 'POST':
+            recipe = self.get_object()
+            user = request.user
+            serializer = FavoriteSerializer(data={'user': user.id, 'recipe': recipe.id})
+            if serializer.is_valid(raise_exception=True) and user != recipe.author:
+                serializer.save()
+                return Response({'message': 'Рецепт добавлен в избранное'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Автор не может добавить свой рецепт в избранное'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'DELETE':
+            recipe = self.get_object()
+            user = request.user.id
+            favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
+            if request.user != favorite.user:
+                return Response({'message': 'Вы не можете отписаться от чужой подписки'},
+                                status=status.HTTP_403_FORBIDDEN)
+            favorite.delete()
+            return Response({'message': f'Вы успешно отписались от рецепта'},
+                            status=status.HTTP_204_NO_CONTENT)
+
+        return Response({'message': 'Метод не поддерживается'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

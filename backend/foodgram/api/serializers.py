@@ -1,10 +1,23 @@
+import base64
+
+from django.core.files.base import ContentFile
 from django.core.validators import MaxLengthValidator, RegexValidator
 from djoser.serializers import UserSerializer
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .models import Follow, User
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -97,6 +110,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
+    author = UserGetSerializer()
     ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients')
 
     class Meta:
@@ -114,11 +128,12 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
     ingredients = RecipeIngredientCreateSerializer(many=True)
 
     class Meta:
         model = Recipe
-        fields = ('name', 'cooking_time', 'text', 'tags', 'ingredients')
+        fields = ('ingredients', 'tags', 'image', 'name', 'text', 'cooking_time')
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -135,3 +150,21 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         # 2.30.07
         return super().to_representation(instance)
 
+
+class IngredientGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('name', 'measurement_unit',)
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ('user', 'recipe',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Подписка уже существует.'
+            )
+        ]
