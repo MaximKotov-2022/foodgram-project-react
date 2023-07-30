@@ -82,7 +82,8 @@ class UserGetSerializer(UserSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed',)
+                  'last_name', 'is_subscribed',
+                  )
 
     def get_is_subscribed(self, obj):
         user_id = self.context.get('request').user.id
@@ -95,7 +96,7 @@ class UserGetSerializer(UserSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'  # Прописать явно поля
+        fields = ('id', 'name', 'color', 'slug')  # Прописать явно поля
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -108,19 +109,35 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
-    author = UserGetSerializer()
+class RecipeSmallSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с краткой информацией о рецепте."""
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class RecipeSerializer(RecipeSmallSerializer):
+    tags = TagSerializer(many=True, read_only=True,)
+    is_favorited = serializers.SerializerMethodField()
+    author = UserGetSerializer(read_only=True,)
     ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients')
 
     class Meta:
         model = Recipe
-        fields = '__all__'  # Прописать явно поля
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'name', 'image', 'text', 'cooking_time')
+
+    def get_is_favorited(self, obj):
+        """Статус - рецепт в избранном или нет."""
+        user_id = self.context.get('request').user.id
+        return Favorite.objects.filter(
+            user=user_id, recipe=obj.id).exists()
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(source='ingredient',
-                                            queryset=Ingredient.objects.all())
+    id = serializers.PrimaryKeyRelatedField(
+        source='ingredient',
+        queryset=Ingredient.objects.all())
 
     class Meta:
         model = RecipeIngredient
@@ -128,12 +145,17 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    author = UserGetSerializer(read_only=True)
     ingredients = RecipeIngredientCreateSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+    )
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = ('ingredients', 'tags', 'image', 'name', 'text', 'cooking_time')
+        fields = ("author", "ingredients", "tags", "name", "image", "text", "cooking_time")
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -147,8 +169,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        # 2.30.07
-        return super().to_representation(instance)
+        serializer = RecipeSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        )
+        return serializer.data
 
 
 class IngredientGetSerializer(serializers.ModelSerializer):
@@ -168,3 +193,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 message='Подписка уже существует.'
             )
         ]
+
+
+class SubscriptionsSerializer(UserGetSerializer):
+    recipes = RecipeSmallSerializer(many=True, read_only=True)
+    recipes_count = serializers.IntegerField(source='recipes.count', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count',)

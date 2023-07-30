@@ -1,7 +1,7 @@
 from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
-                             TagSerializer, UserCreateSerializer,
-                             UserGetSerializer)
+                             SubscriptionsSerializer, TagSerializer,
+                             UserCreateSerializer, UserGetSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from recipes.models import Favorite, Ingredient, Recipe, Tag
@@ -21,6 +21,12 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = UserGetSerializer
     permission_classes = (IsCurrentOrAdminOrReadOnly,)
 
+
+class SubscriptionsViewSet(CustomUserViewSet):
+    queryset = User.objects.all()
+    serializer_class = SubscriptionsSerializer
+    permission_classes = (IsCurrentOrAdminOrReadOnly,)
+
     @action(methods=['get'], detail=True, url_path='subscriptions', permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         subscriptions = User.objects.filter(following__user=request.user).all()
@@ -33,19 +39,18 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
-        subscription = Follow.objects.filter(
-            author=author,
-            user=user,)
+        subscription = User.objects.filter(following__user=self.request.user)
 
         if request.method == 'POST':
-            queryset = Follow.objects.get_or_create(
-                author=author,
-                user=user)
-            serializer = UserGetSerializer(
-                author,
-                context={'request': request}
-            )
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            if not subscription.filter(author=author).exists():
+                queryset = Follow.objects.create(
+                    author=author,
+                    user=user)
+                serializer = UserGetSerializer(
+                    author,
+                    context={'request': request})
+                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Already subscribed'})
         if request.method == 'DELETE':
             subscription.delete()
             serializer = UserGetSerializer(
@@ -54,15 +59,16 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(data=serializer.data, status=status.HTTP_204_NO_CONTENT)
 
-
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientGetSerializer
+    pagination_class = None
 
 
 class RecipeViewSet(ModelViewSet):
@@ -92,8 +98,8 @@ class RecipeViewSet(ModelViewSet):
             serializer = FavoriteSerializer(data={'user': user.id, 'recipe': recipe.id})
             if serializer.is_valid(raise_exception=True) and user != recipe.author:
                 serializer.save()
-                return Response({'message': 'Рецепт добавлен в избранное'}, status=status.HTTP_201_CREATED)
-            return Response({'message': 'Автор не может добавить свой рецепт в избранное'},
+                return Response({'message': 'Рецепт успешно добавлен в избранное'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Ошибка добавления в избранное'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
@@ -101,10 +107,10 @@ class RecipeViewSet(ModelViewSet):
             user = request.user.id
             favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
             if request.user != favorite.user:
-                return Response({'message': 'Вы не можете отписаться от чужой подписки'},
+                return Response({'message': 'Ошибка отписки'},
                                 status=status.HTTP_403_FORBIDDEN)
             favorite.delete()
-            return Response({'message': f'Вы успешно отписались от рецепта'},
+            return Response({'message': f'Успешная отписка'},
                             status=status.HTTP_204_NO_CONTENT)
 
         return Response({'message': 'Метод не поддерживается'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

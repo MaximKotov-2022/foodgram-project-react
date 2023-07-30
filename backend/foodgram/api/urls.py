@@ -1,5 +1,5 @@
 from api.views import (CustomUserViewSet, IngredientViewSet, RecipeViewSet,
-                       TagViewSet)
+                       SubscriptionsViewSet, TagViewSet)
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
@@ -13,7 +13,8 @@ router.register('ingredients', IngredientViewSet)
 
 urlpatterns = [
     path('users/subscriptions/',
-         CustomUserViewSet.as_view({'get': 'subscriptions'})),
+         SubscriptionsViewSet.as_view({'get': 'subscriptions'})),
+    path('users/<int:id>/subscribe/', SubscriptionsViewSet.as_view({'post': 'subscribe', 'delete': 'subscribe'})),
     path('auth/', include('djoser.urls.authtoken')),
     path('', include(router.urls)),
 ]

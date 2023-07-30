@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import CheckConstraint, F, Q
 
 from .validators import validate_username
 
@@ -53,9 +53,8 @@ class Follow(models.Model):
     )
 
     class Meta:
-        constraints = [
-            CheckConstraint(
-                check=~Q(author=F('user')),
-                name='user_not_author',
-            )
-        ]
+        unique_together = ('user', 'author')
+
+    def clean(self):
+        if self.user == self.author:
+            raise ValidationError('Вы не можете подписаться на себя.')
