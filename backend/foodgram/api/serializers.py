@@ -100,8 +100,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
+    id = serializers.ReadOnlyField(source='ingredient.id', read_only=True)
+    name = serializers.CharField(source='ingredient.name', read_only=True)
     measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
 
     class Meta:
@@ -120,7 +120,7 @@ class RecipeSerializer(RecipeSmallSerializer):
     tags = TagSerializer(many=True, read_only=True,)
     is_favorited = serializers.SerializerMethodField()
     author = UserGetSerializer(read_only=True,)
-    ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients')
+    ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients', read_only=True,)
 
     class Meta:
         model = Recipe
@@ -203,3 +203,16 @@ class SubscriptionsSerializer(UserGetSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count',)
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ('user', 'author',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author'),
+                message='Подписка уже существует.'
+            )
+        ]

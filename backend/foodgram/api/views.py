@@ -1,7 +1,8 @@
-from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
-                             RecipeCreateSerializer, RecipeSerializer,
-                             SubscriptionsSerializer, TagSerializer,
-                             UserCreateSerializer, UserGetSerializer)
+from api.serializers import (FavoriteSerializer, FollowSerializer,
+                             IngredientGetSerializer, RecipeCreateSerializer,
+                             RecipeSerializer, SubscriptionsSerializer,
+                             TagSerializer, UserCreateSerializer,
+                             UserGetSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from recipes.models import Favorite, Ingredient, Recipe, Tag
@@ -25,7 +26,7 @@ class CustomUserViewSet(UserViewSet):
 class SubscriptionsViewSet(CustomUserViewSet):
     queryset = User.objects.all()
     serializer_class = SubscriptionsSerializer
-    permission_classes = (IsCurrentOrAdminOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
 
     @action(methods=['get'], detail=True, url_path='subscriptions', permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
@@ -37,27 +38,33 @@ class SubscriptionsViewSet(CustomUserViewSet):
 
     @action(methods=['post', 'delete'], detail=True, url_path='subscribe', permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
-        user = request.user
-        author = get_object_or_404(User, id=id)
-        subscription = User.objects.filter(following__user=self.request.user)
-
         if request.method == 'POST':
-            if not subscription.filter(author=author).exists():
-                queryset = Follow.objects.create(
-                    author=author,
-                    user=user)
-                serializer = UserGetSerializer(
-                    author,
-                    context={'request': request})
-                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Already subscribed'})
-        if request.method == 'DELETE':
-            subscription.delete()
-            serializer = UserGetSerializer(
-                author,
+            author = get_object_or_404(User, id=id)
+            if author == request.user:
+                return Response(
+                    {'errors': 'Вы не можете подписаться на себя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = FollowSerializer(
+                data={'user': request.user.id, 'author': author.id},
                 context={'request': request}
             )
-            return Response(data=serializer.data, status=status.HTTP_204_NO_CONTENT)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            author = get_object_or_404(User, id=id)
+            if not Follow.objects.filter(user=request.user,
+                                         author=author).exists():
+                return Response(
+                    {'errors': 'Вы не подписаны на этого пользователя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            Follow.objects.get(user=request.user.id,
+                               author=id).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
