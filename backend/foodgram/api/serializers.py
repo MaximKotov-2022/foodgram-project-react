@@ -96,7 +96,7 @@ class UserGetSerializer(UserSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug')  # Прописать явно поля
+        fields = ('id', 'name', 'color', 'slug')
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -174,6 +174,45 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             context={'request': self.context.get('request')}
         )
         return serializer.data
+
+
+class RecipePartialUpdateSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+        required=False,
+    )
+    ingredients = RecipeIngredientSerializer(many=True, required=False)
+    image = Base64ImageField(required=True)
+
+    class Meta:
+        model = Recipe
+        fields = ('name', 'text', 'image', 'cooking_time', 'tags', 'ingredients')
+
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop('ingredients', [])
+        tags = validated_data.pop('tags', [])
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.image = validated_data.get('image', instance.image)
+
+        instance.save()
+
+        instance.recipe_ingredients.all().delete()
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data.get('id')
+            if ingredient_id:
+                ingredient = Ingredient.objects.get(id=ingredient_id)
+                RecipeIngredient.objects.create(
+                    recipe=instance,
+                    ingredient=ingredient,
+                    amount=ingredient_data['amount']
+                )
+
+        instance.tags.set(tags)
+        return instance
 
 
 class IngredientGetSerializer(serializers.ModelSerializer):

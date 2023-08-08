@@ -1,11 +1,11 @@
 from api.serializers import (FavoriteSerializer, FollowSerializer,
                              IngredientGetSerializer, RecipeCreateSerializer,
-                             RecipeSerializer, SubscriptionsSerializer,
-                             TagSerializer, UserCreateSerializer,
-                             UserGetSerializer)
+                             RecipePartialUpdateSerializer, RecipeSerializer,
+                             SubscriptionsSerializer, TagSerializer,
+                             UserCreateSerializer, UserGetSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from recipes.models import Favorite, Ingredient, Recipe, Tag
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -92,6 +92,8 @@ class RecipeViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return RecipeCreateSerializer
+        elif self.action == 'partial_update':
+            return RecipePartialUpdateSerializer
         return RecipeSerializer
 
     def perform_create(self, serializer):
@@ -119,5 +121,13 @@ class RecipeViewSet(ModelViewSet):
             favorite.delete()
             return Response({'message': f'Успешная отписка'},
                             status=status.HTTP_204_NO_CONTENT)
-
         return Response({'message': 'Метод не поддерживается'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        instance.tags.set(serializer.validated_data.get('tags', instance.tags.all()))
+        return Response(serializer.data)
+
