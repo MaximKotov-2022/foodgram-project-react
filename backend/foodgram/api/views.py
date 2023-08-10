@@ -130,4 +130,3 @@ class RecipeViewSet(ModelViewSet):
         self.perform_update(serializer)
         instance.tags.set(serializer.validated_data.get('tags', instance.tags.all()))
         return Response(serializer.data)
-

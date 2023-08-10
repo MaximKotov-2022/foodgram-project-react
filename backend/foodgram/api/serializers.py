@@ -182,7 +182,7 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
         many=True,
         required=False,
     )
-    ingredients = RecipeIngredientSerializer(many=True, required=False)
+    ingredients = RecipeIngredientCreateSerializer(many=True, required=False)
     image = Base64ImageField(required=True)
 
     class Meta:
@@ -201,8 +201,10 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
         instance.save()
 
         instance.recipe_ingredients.all().delete()
+
         for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data.get('id')
+            ingredient_name = ingredient_data.get('ingredient')
+            ingredient_id = Ingredient.objects.get(name=ingredient_name).id
             if ingredient_id:
                 ingredient = Ingredient.objects.get(id=ingredient_id)
                 RecipeIngredient.objects.create(
@@ -213,6 +215,14 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
 
         instance.tags.set(tags)
         return instance
+
+    def to_representation(self, instance):
+        serializer = RecipeSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        )
+        return serializer.data
+
 
 
 class IngredientGetSerializer(serializers.ModelSerializer):
