@@ -1,11 +1,14 @@
 from api.serializers import (FavoriteSerializer, FollowSerializer,
                              IngredientGetSerializer, RecipeCreateSerializer,
                              RecipePartialUpdateSerializer, RecipeSerializer,
-                             SubscriptionsSerializer, TagSerializer,
-                             UserCreateSerializer, UserGetSerializer)
-from django.shortcuts import get_object_or_404
+                             RecipeSmallSerializer, SubscriptionsSerializer,
+                             TagSerializer, UserCreateSerializer,
+                             UserGetSerializer)
+from django.shortcuts import HttpResponse, get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -13,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from .filters import IngredientFilter, RecipeFilter
 from .models import Follow, User
 from .permissions import IsCurrentOrAdminOrReadOnly
 
@@ -76,12 +80,16 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientGetSerializer
     pagination_class = None
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticated,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
@@ -130,3 +138,54 @@ class RecipeViewSet(ModelViewSet):
         self.perform_update(serializer)
         instance.tags.set(serializer.validated_data.get('tags', instance.tags.all()))
         return Response(serializer.data)
+
+    def add(self, model, user, pk, name):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        relation = model.objects.filter(user=user, recipe=recipe)
+        if relation.exists():
+            return Response(
+                {'errors': f'Нельзя повторно добавить рецепт в {name}'},
+                status=status.HTTP_400_BAD_REQUEST)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeSmallSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_relation(self, model, user, pk, name):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        relation = model.objects.filter(user=user, recipe=recipe)
+        if not relation.exists():
+            return Response(
+                {'errors': f'Нельзя повторно удалить рецепт из {name}'},
+                status=status.HTTP_400_BAD_REQUEST)
+        relation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['post', 'delete'], detail=True, permission_classes=[IsAuthenticated])
+    def shopping_cart(self, request, pk=None):
+        user = request.user
+        if request.method == 'POST':
+            name = 'список покупок'
+            return self.add(ShoppingCart, user, pk, name)
+        if request.method == 'DELETE':
+            name = 'списка покупок'
+            return self.delete_relation(ShoppingCart, user, pk, name)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated, ])
+    def download_shopping_cart(self, request):
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__in=ShoppingCart.objects.filter(
+                user=request.user
+            ).values('recipe')
+        )
+        filename = 'shopping_cart.txt'
+        response = HttpResponse(content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        content = [
+            f"{ingredient.ingredient.name} - {ingredient.amount} "
+            f"{ingredient.ingredient.measurement_unit}\n"
+            for ingredient in ingredients
+        ]
+        content = ''.join(content).encode('utf-8')
+        response.content = content
+        return response

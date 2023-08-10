@@ -224,7 +224,6 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-
 class IngredientGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient

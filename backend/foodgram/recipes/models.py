@@ -1,5 +1,6 @@
 from api.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -21,7 +22,9 @@ class Recipe(models.Model):
         blank=True,
     )
     name = models.CharField(max_length=200)
-    cooking_time = models.PositiveIntegerField()  # Добавить валидацию на минимальное значение
+    cooking_time = models.PositiveIntegerField(validators=[
+        MinValueValidator(1, 'Время должно быть больше 1 минуты')
+    ])
     text = models.TextField()
     author = models.ForeignKey(User, related_name='recipes', on_delete=models.CASCADE)
     ingredients = models.ManyToManyField('Ingredient',
@@ -43,7 +46,9 @@ class Ingredient(models.Model):
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, related_name='recipe_ingredients', on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, related_name='ingredients_recipe', on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()  # Добавить валидацию на минимальное значение
+    amount = models.PositiveIntegerField(validators=[
+        MinValueValidator(1, 'Количество должно быть больше 1')
+    ])
 
 
 class Favorite(models.Model):
