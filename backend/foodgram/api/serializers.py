@@ -226,7 +226,7 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
 class IngredientGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('name', 'measurement_unit',)
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

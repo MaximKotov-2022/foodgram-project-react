@@ -107,7 +107,7 @@ class RecipeViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=['post', 'delete'], detail=True, url_path='favorite', permission_classes=[IsAuthenticated])
+    @action(methods=['get', 'post', 'delete'], detail=True, url_path='favorite', permission_classes=[IsAuthenticated])
     def favorites(self, request, pk=None):
         if request.method == 'POST':
             recipe = self.get_object()
