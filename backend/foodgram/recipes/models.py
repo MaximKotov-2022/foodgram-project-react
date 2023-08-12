@@ -61,29 +61,29 @@ class RecipeIngredient(models.Model):
 
 
 class Favorite(models.Model):
-        user = models.ForeignKey(
-            User,
-            on_delete=models.CASCADE,
-            related_name='favorites',
-        )
-        recipe = models.ForeignKey(
-            Recipe,
-            on_delete=models.CASCADE,
-            related_name='favorites',
-        )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+    )
 
-        class Meta:
-            unique_together = ('user', 'recipe')
+    class Meta:
+        unique_together = ('user', 'recipe')
 
-        def clean(self):
-            if self.user == self.recipe.author:
-                raise ValidationError(
-                    'Вы не можете добавить свой собственный рецепт в'
-                    'избранное.')
+    def clean(self):
+        if self.user == self.recipe.author:
+            raise ValidationError(
+                'Вы не можете добавить свой собственный рецепт в'
+                'избранное.')
 
-        def __str__(self):
-            return (f'Пользователь { self.user } добавил в избранное'
-                    f'рецепт { self.recipe }')
+    def __str__(self):
+        return (f'Пользователь {self.user} добавил в избранное'
+                f'рецепт {self.recipe}')
 
 
 class ShoppingCart(models.Model):

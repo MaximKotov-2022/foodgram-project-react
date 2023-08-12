@@ -2,8 +2,7 @@ from api.serializers import (FavoriteSerializer, FollowSerializer,
                              IngredientGetSerializer, RecipeCreateSerializer,
                              RecipePartialUpdateSerializer, RecipeSerializer,
                              RecipeSmallSerializer, SubscriptionsSerializer,
-                             TagSerializer, UserCreateSerializer,
-                             UserGetSerializer)
+                             TagSerializer, UserGetSerializer)
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -37,7 +36,8 @@ class SubscriptionsViewSet(CustomUserViewSet):
     def subscriptions(self, request):
         subscriptions = User.objects.filter(following__user=request.user).all()
         paginator = PageNumberPagination()
-        paginated_subscriptions = paginator.paginate_queryset(subscriptions, request)
+        paginated_subscriptions = paginator.paginate_queryset(subscriptions,
+                                                              request)
         serializer = self.get_serializer(paginated_subscriptions, many=True)
         return paginator.get_paginated_response(serializer.data)
 
@@ -120,8 +120,8 @@ class RecipeViewSet(ModelViewSet):
                     'user': user.id,
                     'recipe': recipe.id}
             )
-            if (serializer.is_valid(raise_exception=True) and
-                    user != recipe.author):
+            if (serializer.is_valid(raise_exception=True)
+                    and user != recipe.author):
                 serializer.save()
                 return Response({
                     'message': 'Рецепт успешно добавлен в избранное'},
@@ -137,7 +137,7 @@ class RecipeViewSet(ModelViewSet):
                 return Response({'message': 'Ошибка отписки'},
                                 status=status.HTTP_403_FORBIDDEN)
             favorite.delete()
-            return Response({'message': f'Успешная отписка'},
+            return Response({'message': 'Успешная отписка'},
                             status=status.HTTP_204_NO_CONTENT)
         return Response({'message': 'Метод не поддерживается'},
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -186,7 +186,7 @@ class RecipeViewSet(ModelViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(methods=['get'], detail=False,
-            permission_classes=[IsAuthenticated,])
+            permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
             recipe__in=ShoppingCart.objects.filter(
