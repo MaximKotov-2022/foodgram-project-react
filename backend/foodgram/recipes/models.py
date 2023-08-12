@@ -23,13 +23,17 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=200)
     cooking_time = models.PositiveIntegerField(validators=[
-        MinValueValidator(1, 'Время должно быть больше 1 минуты')
+        MinValueValidator(1,
+                          'Время должно быть больше 1 минуты')
     ])
     text = models.TextField()
-    author = models.ForeignKey(User, related_name='recipes', on_delete=models.CASCADE)
-    ingredients = models.ManyToManyField('Ingredient',
-                                         through='RecipeIngredient',
-                                         through_fields=('recipe', 'ingredient'))
+    author = models.ForeignKey(User,
+                               related_name='recipes',
+                               on_delete=models.CASCADE)
+    ingredients = models.ManyToManyField(
+        'Ingredient',
+        through='RecipeIngredient',
+        through_fields=('recipe', 'ingredient'))
 
     def __str__(self):
         return self.name
@@ -44,10 +48,15 @@ class Ingredient(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, related_name='recipe_ingredients', on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, related_name='ingredients_recipe', on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe,
+                               related_name='recipe_ingredients',
+                               on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient,
+                                   related_name='ingredients_recipe',
+                                   on_delete=models.CASCADE)
     amount = models.PositiveIntegerField(validators=[
-        MinValueValidator(1, 'Количество должно быть больше 1')
+        MinValueValidator(1,
+                          'Количество должно быть больше 1')
     ])
 
 
@@ -68,10 +77,13 @@ class Favorite(models.Model):
 
         def clean(self):
             if self.user == self.recipe.author:
-                raise ValidationError('Вы не можете добавить свой собственный рецепт в избранное.')
+                raise ValidationError(
+                    'Вы не можете добавить свой собственный рецепт в'
+                    'избранное.')
 
         def __str__(self):
-            return f'Пользователь { self.user } добавил в избранное рецепт { self.recipe }'
+            return (f'Пользователь { self.user } добавил в избранное'
+                    f'рецепт { self.recipe }')
 
 
 class ShoppingCart(models.Model):

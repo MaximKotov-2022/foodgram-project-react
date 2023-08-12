@@ -32,7 +32,8 @@ class SubscriptionsViewSet(CustomUserViewSet):
     serializer_class = SubscriptionsSerializer
     permission_classes = (IsAuthenticated,)
 
-    @action(methods=['get'], detail=True, url_path='subscriptions', permission_classes=[IsAuthenticated])
+    @action(methods=['get'], detail=True, url_path='subscriptions',
+            permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         subscriptions = User.objects.filter(following__user=request.user).all()
         paginator = PageNumberPagination()
@@ -40,7 +41,8 @@ class SubscriptionsViewSet(CustomUserViewSet):
         serializer = self.get_serializer(paginated_subscriptions, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    @action(methods=['post', 'delete'], detail=True, url_path='subscribe', permission_classes=[IsAuthenticated])
+    @action(methods=['post', 'delete'], detail=True, url_path='subscribe',
+            permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         if request.method == 'POST':
             author = get_object_or_404(User, id=id)
@@ -107,15 +109,23 @@ class RecipeViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=['get', 'post', 'delete'], detail=True, url_path='favorite', permission_classes=[IsAuthenticated])
+    @action(methods=['get', 'post', 'delete'], detail=True,
+            url_path='favorite', permission_classes=[IsAuthenticated])
     def favorites(self, request, pk=None):
         if request.method == 'POST':
             recipe = self.get_object()
             user = request.user
-            serializer = FavoriteSerializer(data={'user': user.id, 'recipe': recipe.id})
-            if serializer.is_valid(raise_exception=True) and user != recipe.author:
+            serializer = FavoriteSerializer(
+                data={
+                    'user': user.id,
+                    'recipe': recipe.id}
+            )
+            if (serializer.is_valid(raise_exception=True) and
+                    user != recipe.author):
                 serializer.save()
-                return Response({'message': 'Рецепт успешно добавлен в избранное'}, status=status.HTTP_201_CREATED)
+                return Response({
+                    'message': 'Рецепт успешно добавлен в избранное'},
+                    status=status.HTTP_201_CREATED)
             return Response({'message': 'Ошибка добавления в избранное'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,14 +139,17 @@ class RecipeViewSet(ModelViewSet):
             favorite.delete()
             return Response({'message': f'Успешная отписка'},
                             status=status.HTTP_204_NO_CONTENT)
-        return Response({'message': 'Метод не поддерживается'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response({'message': 'Метод не поддерживается'},
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data,
+                                         partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        instance.tags.set(serializer.validated_data.get('tags', instance.tags.all()))
+        instance.tags.set(serializer.validated_data.get('tags',
+                                                        instance.tags.all()))
         return Response(serializer.data)
 
     def add(self, model, user, pk, name):
@@ -160,7 +173,8 @@ class RecipeViewSet(ModelViewSet):
         relation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['post', 'delete'], detail=True, permission_classes=[IsAuthenticated])
+    @action(methods=['post', 'delete'], detail=True,
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         user = request.user
         if request.method == 'POST':
@@ -171,7 +185,8 @@ class RecipeViewSet(ModelViewSet):
             return self.delete_relation(ShoppingCart, user, pk, name)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated, ])
+    @action(methods=['get'], detail=False,
+            permission_classes=[IsAuthenticated,])
     def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
             recipe__in=ShoppingCart.objects.filter(

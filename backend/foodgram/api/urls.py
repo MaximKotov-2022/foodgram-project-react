@@ -14,11 +14,16 @@ router.register('ingredients', IngredientViewSet)
 urlpatterns = [
     path('users/subscriptions/',
          SubscriptionsViewSet.as_view({'get': 'subscriptions'})),
-    path('users/<int:id>/subscribe/', SubscriptionsViewSet.as_view({'post': 'subscribe', 'delete': 'subscribe'})),
+    path('users/<int:id>/subscribe/',
+         SubscriptionsViewSet.as_view(
+             {'post': 'subscribe',
+              'delete': 'subscribe'}
+         )),
     path('auth/', include('djoser.urls.authtoken')),
     path('', include(router.urls)),
 ]
 
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

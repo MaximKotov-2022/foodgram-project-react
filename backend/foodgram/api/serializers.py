@@ -25,7 +25,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validators=[
             UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(
-                254, message="Длина email не должна превышать 254 символа."
+                254,
+                message="Длина email не должна превышать 254 символа."
             ),
         ],
     )
@@ -41,7 +42,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         required=True,
         validators=[
             MaxLengthValidator(
-                150, message="Длина пароля не должна превышать 150 символов."
+                150,
+                message="Длина пароля не должна превышать 150 символов."
             ),
         ],
 
@@ -49,7 +51,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password',)
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'password',)
         write_only_fields = ('password',)
 
     def validate_username(self, value):
@@ -102,7 +105,8 @@ class TagSerializer(serializers.ModelSerializer):
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id', read_only=True)
     name = serializers.CharField(source='ingredient.name', read_only=True)
-    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit')
 
     class Meta:
         model = RecipeIngredient
@@ -120,7 +124,9 @@ class RecipeSerializer(RecipeSmallSerializer):
     tags = TagSerializer(many=True, read_only=True,)
     is_favorited = serializers.SerializerMethodField()
     author = UserGetSerializer(read_only=True,)
-    ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients', read_only=True,)
+    ingredients = RecipeIngredientSerializer(many=True,
+                                             source='recipe_ingredients',
+                                             read_only=True,)
 
     class Meta:
         model = Recipe
@@ -155,7 +161,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ("author", "ingredients", "tags", "name", "image", "text", "cooking_time")
+        fields = ("author", "ingredients", "tags", "name", "image", "text",
+                  "cooking_time")
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -187,7 +194,8 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('name', 'text', 'image', 'cooking_time', 'tags', 'ingredients')
+        fields = ('name', 'text', 'image', 'cooking_time', 'tags',
+                  'ingredients')
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients', [])
@@ -195,7 +203,8 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
 
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get('cooking_time',
+                                                   instance.cooking_time)
         instance.image = validated_data.get('image', instance.image)
 
         instance.save()
@@ -244,7 +253,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class SubscriptionsSerializer(UserGetSerializer):
     recipes = RecipeSmallSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(source='recipes.count', read_only=True)
+    recipes_count = serializers.IntegerField(source='recipes.count',
+                                             read_only=True)
 
     class Meta:
         model = User
