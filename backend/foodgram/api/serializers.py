@@ -204,9 +204,8 @@ class RecipePartialUpdateSerializer(serializers.ModelSerializer):
 
         for ingredient_data in ingredients_data:
             ingredient_name = ingredient_data.get('ingredient')
-            ingredient_id = Ingredient.objects.get(name=ingredient_name).id
-            if ingredient_id:
-                ingredient = Ingredient.objects.get(id=ingredient_id)
+            ingredient = Ingredient.objects.get(name=ingredient_name)
+            if ingredient:
                 RecipeIngredient.objects.create(
                     recipe=instance,
                     ingredient=ingredient,
