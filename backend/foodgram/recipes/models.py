@@ -3,14 +3,14 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from api.models import User
-from foodgram.settings import (MAX_LENGTH_RECIPES_COLOR,
-                               MAX_LENGTH_RECIPES_DATA)
+from django.conf import settings
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
-    color = models.CharField(max_length=MAX_LENGTH_RECIPES_COLOR)
-    slug = models.SlugField(max_length=MAX_LENGTH_RECIPES_DATA, unique=True)
+    name = models.CharField(max_length=settings.MAX_LENGTH_RECIPES_DATA)
+    color = models.CharField(max_length=settings.MAX_LENGTH_RECIPES_COLOR)
+    slug = models.SlugField(max_length=settings.MAX_LENGTH_RECIPES_DATA,
+                            unique=True)
 
     class Meta:
         verbose_name = 'Тэг'
@@ -27,7 +27,7 @@ class Recipe(models.Model):
         default=None,
         blank=True,
     )
-    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
+    name = models.CharField(max_length=settings.MAX_LENGTH_RECIPES_DATA)
     cooking_time = models.PositiveIntegerField(validators=[
         MinValueValidator(1,
                           'Время должно быть больше 1 минуты')
@@ -50,8 +50,9 @@ class Recipe(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
-    measurement_unit = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
+    name = models.CharField(max_length=settings.MAX_LENGTH_RECIPES_DATA)
+    measurement_unit = models.CharField(
+        max_length=settings.MAX_LENGTH_RECIPES_DATA)
 
     class Meta:
         verbose_name = 'Ингредиент'

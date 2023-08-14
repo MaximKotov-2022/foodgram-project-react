@@ -18,7 +18,7 @@ class TagAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'cooking_time', 'text', 'author',
                     'favorites_amount')
-    list_filter = ('name', 'author', 'tags')
+    search_fields = ('author__username', 'name', 'tags__name',)
     inlines = (RecipeIngredient,)
 
     def favorites_amount(self, obj):
