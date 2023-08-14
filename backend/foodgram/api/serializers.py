@@ -28,7 +28,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
             UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(
                 MAX_LENGTH_EMAIL,
-                message="Длина email не должна превышать 254 символа."
+                message=(f"Длина email не должна"
+                         f"превышать { MAX_LENGTH_EMAIL } символа.")
             ),
         ],
     )
@@ -45,7 +46,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validators=[
             MaxLengthValidator(
                 MAX_LENGTH_PERSONAL_DATA,
-                message="Длина пароля не должна превышать 150 символов."
+                message=f"Длина пароля не должна"
+                        f"превышать { MAX_LENGTH_PERSONAL_DATA } символов."
             ),
         ],
 
