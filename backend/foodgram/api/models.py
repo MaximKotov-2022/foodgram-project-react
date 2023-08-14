@@ -38,6 +38,11 @@ class User(AbstractUser):
         blank=True
     )
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     def __str__(self):
         return self.username
 
@@ -56,6 +61,8 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ('user', 'author')
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
 
     def clean(self):
         if self.user == self.author:

@@ -13,6 +13,10 @@ class Tag(models.Model):
     color = models.CharField(max_length=MAX_LENGTH_RECIPES_COLOR)
     slug = models.SlugField(max_length=MAX_LENGTH_RECIPES_DATA, unique=True)
 
+    class Meta:
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
+
     def __str__(self):
         return self.name
 
@@ -39,6 +43,10 @@ class Recipe(models.Model):
         through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'))
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
     def __str__(self):
         return self.name
 
@@ -46,6 +54,10 @@ class Recipe(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
     measurement_unit = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
@@ -78,6 +90,8 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = ('user', 'recipe')
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранные'
 
     def clean(self):
         if self.user == self.recipe.author:
@@ -110,3 +124,5 @@ class ShoppingCart(models.Model):
                 name='unique_cart_recipe'
             )
         ]
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
