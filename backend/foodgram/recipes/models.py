@@ -1,7 +1,8 @@
-from api.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+
+from api.models import User
 
 
 class Tag(models.Model):
