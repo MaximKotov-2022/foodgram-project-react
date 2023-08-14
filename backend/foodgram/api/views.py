@@ -1,8 +1,7 @@
 from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
                              RecipeCreateSerializer,
                              RecipePartialUpdateSerializer, RecipeSerializer,
-                             RecipeSmallSerializer, SubscriptionsSerializer,
-                             TagSerializer, UserGetSerializer)
+                             RecipeSmallSerializer, TagSerializer)
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,

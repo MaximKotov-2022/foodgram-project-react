@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from users.models import Follow, User
+from users.models import User
 from users.serializers import UserGetSerializer
 
 
