@@ -24,7 +24,6 @@ class Tag(models.Model):
 class Recipe(models.Model):
     tags = models.ManyToManyField(Tag)
     image = models.ImageField(
-        upload_to='recipes/',
         null=True,
         default=None,
         blank=True,
