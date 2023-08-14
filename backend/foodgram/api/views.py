@@ -1,16 +1,17 @@
-from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
-                             RecipeCreateSerializer,
-                             RecipePartialUpdateSerializer, RecipeSerializer,
-                             RecipeSmallSerializer, TagSerializer)
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
+                             RecipeCreateSerializer,
+                             RecipePartialUpdateSerializer, RecipeSerializer,
+                             RecipeSmallSerializer, TagSerializer)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 
 from .filters import IngredientFilter, RecipeFilter
 
