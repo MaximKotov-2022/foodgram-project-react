@@ -1,8 +1,8 @@
-from api.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from api.models import User
 from foodgram.settings import (MAX_LENGTH_EMAIL, MAX_LENGTH_PERSONAL_DATA,
                                MAX_LENGTH_RECIPES_COLOR,
                                MAX_LENGTH_RECIPES_DATA)
