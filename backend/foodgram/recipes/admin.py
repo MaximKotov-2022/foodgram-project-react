@@ -6,7 +6,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 
 class RecipeIngredient(admin.TabularInline):
     model = RecipeIngredient
-    extra = 1
+    extra = 0
 
 
 @admin.register(Tag)
@@ -16,8 +16,13 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'cooking_time', 'text', 'author',)
+    list_display = ('id', 'name', 'cooking_time', 'text', 'author',
+                    'favorites_amount')
+    list_filter = ('name', 'author', 'tags')
     inlines = (RecipeIngredient,)
+
+    def favorites_amount(self, obj):
+        return obj.favorites.count()
 
 
 @admin.register(Ingredient)

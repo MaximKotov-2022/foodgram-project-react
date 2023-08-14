@@ -60,17 +60,16 @@ class SubscriptionsViewSet(CustomUserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            author = get_object_or_404(User, id=id)
-            if not Follow.objects.filter(user=request.user,
-                                         author=author).exists():
-                return Response(
-                    {'errors': 'Вы не подписаны на этого пользователя'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            Follow.objects.get(user=request.user.id,
-                               author=id).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        author = get_object_or_404(User, id=id)
+        if not Follow.objects.filter(user=request.user,
+                                     author=author).exists():
+            return Response(
+                {'errors': 'Вы не подписаны на этого пользователя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        Follow.objects.get(user=request.user.id,
+                           author=id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
@@ -95,10 +94,9 @@ class RecipeViewSet(ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        recipes = Recipe.objects.prefetch_related(
+        return Recipe.objects.prefetch_related(
             'recipe_ingredients__ingredient', 'tags'
         ).all()
-        return recipes
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -181,10 +179,8 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'POST':
             name = 'список покупок'
             return self.add(ShoppingCart, user, pk, name)
-        if request.method == 'DELETE':
-            name = 'списка покупок'
-            return self.delete_relation(ShoppingCart, user, pk, name)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        name = 'списка покупок'
+        return self.delete_relation(ShoppingCart, user, pk, name)
 
     @action(methods=['get'], detail=False,
             permission_classes=[IsAuthenticated])
