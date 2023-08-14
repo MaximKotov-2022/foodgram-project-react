@@ -1,8 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-
-from django.conf import settings
 
 from .validators import validate_username
 
@@ -39,7 +38,7 @@ class User(AbstractUser):
     )
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -67,3 +66,6 @@ class Follow(models.Model):
     def clean(self):
         if self.user == self.author:
             raise ValidationError('Вы не можете подписаться на себя.')
+
+    def __str__(self):
+        return f'Пользователь { self.user } подписался на { self.author }'

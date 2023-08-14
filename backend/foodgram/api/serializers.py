@@ -3,11 +3,10 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.validators import MaxLengthValidator, RegexValidator
 from djoser.serializers import UserSerializer
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-
 from foodgram.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_PERSONAL_DATA
 from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .models import Follow, User
 
