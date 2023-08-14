@@ -2,28 +2,30 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from foodgram.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_PERSONAL_DATA
+
 from .validators import validate_username
 
 
 class User(AbstractUser):
     email = models.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         unique=True,
     )
     username = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_PERSONAL_DATA,
         blank=True,
         unique=True,
         validators=[validate_username]
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_PERSONAL_DATA,
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_PERSONAL_DATA,
     )
     password = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_PERSONAL_DATA,
     )
     groups = models.ManyToManyField(
         'auth.Group',

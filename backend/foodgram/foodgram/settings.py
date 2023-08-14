@@ -99,3 +99,8 @@ DJOSER = {
         'current_user': 'api.serializers.UserGetSerializer',
     }
 }
+
+MAX_LENGTH_EMAIL = 254
+MAX_LENGTH_PERSONAL_DATA = 150
+MAX_LENGTH_RECIPES_DATA = 200
+MAX_LENGTH_RECIPES_COLOR = 7

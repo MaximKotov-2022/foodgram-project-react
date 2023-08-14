@@ -3,10 +3,11 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.validators import MaxLengthValidator, RegexValidator
 from djoser.serializers import UserSerializer
+from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
+from foodgram.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_PERSONAL_DATA
 
 from .models import Follow, User
 
@@ -26,7 +27,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validators=[
             UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(
-                254,
+                MAX_LENGTH_EMAIL,
                 message="Длина email не должна превышать 254 символа."
             ),
         ],
@@ -35,7 +36,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validators=[
             UniqueValidator(queryset=User.objects.all()),
             RegexValidator(regex=r"^[\w.@+-]+$",),
-            MaxLengthValidator(150),
+            MaxLengthValidator(MAX_LENGTH_PERSONAL_DATA),
         ]
     )
     password = serializers.CharField(
@@ -43,7 +44,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         required=True,
         validators=[
             MaxLengthValidator(
-                150,
+                MAX_LENGTH_PERSONAL_DATA,
                 message="Длина пароля не должна превышать 150 символов."
             ),
         ],

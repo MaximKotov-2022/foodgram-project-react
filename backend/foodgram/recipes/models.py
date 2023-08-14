@@ -1,14 +1,17 @@
+from api.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.models import User
+from foodgram.settings import (MAX_LENGTH_EMAIL, MAX_LENGTH_PERSONAL_DATA,
+                               MAX_LENGTH_RECIPES_COLOR,
+                               MAX_LENGTH_RECIPES_DATA)
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200)
-    color = models.CharField(max_length=7)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
+    color = models.CharField(max_length=MAX_LENGTH_RECIPES_COLOR)
+    slug = models.SlugField(max_length=MAX_LENGTH_RECIPES_DATA, unique=True)
 
     def __str__(self):
         return self.name
@@ -22,7 +25,7 @@ class Recipe(models.Model):
         default=None,
         blank=True,
     )
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
     cooking_time = models.PositiveIntegerField(validators=[
         MinValueValidator(1,
                           'Время должно быть больше 1 минуты')
@@ -41,8 +44,8 @@ class Recipe(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=200)
+    name = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
+    measurement_unit = models.CharField(max_length=MAX_LENGTH_RECIPES_DATA)
 
     def __str__(self):
         return self.name
