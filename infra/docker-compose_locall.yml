@@ -9,7 +9,9 @@ services:
       - ./.env
 
   backend:
-    image: kotovmaxim/foodgram-backend
+    build:
+      context: ../backend/
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "8000:80"
@@ -22,7 +24,9 @@ services:
       - ./.env
 
   frontend:
-    image: kotovmaxim/foodgram-frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
