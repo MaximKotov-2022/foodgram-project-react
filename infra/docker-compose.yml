@@ -41,5 +41,6 @@ services:
       - ./docs/:/usr/share/nginx/html/api/docs/
       - static:/etc/nginx/html/static/
       - media:/etc/nginx/html/media/
+      - redoc:/usr/share/nginx/html/api/redoc/
     depends_on:
       - backend
