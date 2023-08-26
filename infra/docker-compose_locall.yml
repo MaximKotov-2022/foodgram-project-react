@@ -1,4 +1,10 @@
 version: '3.8'
+
+volumes:
+  db_data:
+  static_value:
+  media_value:
+
 services:
 
   db:
@@ -45,8 +51,3 @@ services:
     depends_on:
       - backend
       - frontend
-
-volumes:
-  db_data:
-  static_value:
-  media_value:
