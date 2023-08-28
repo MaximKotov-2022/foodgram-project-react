@@ -121,7 +121,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd foodgram/infra
+            cd foodgram
             sudo apt-get update
             sudo apt-get install docker-compose
             sudo docker-compose pull
