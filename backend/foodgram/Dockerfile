@@ -6,6 +6,6 @@ COPY requirements.txt .
 
 RUN pip3 install -r requirements.txt --no-cache-dir
 
-COPY foodgram/infra/ .
+COPY . .
 
-CMD ["gunicorn", "foodgram.wsgi", "--bind", "0:8000" ]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]
