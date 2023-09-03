@@ -130,6 +130,7 @@ class RecipeViewSet(ModelViewSet):
     @action(methods=['get'], detail=False,
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
+        self.pagination_class = None
         ingredients = RecipeIngredient.objects.filter(
             recipe__in=ShoppingCart.objects.filter(
                 user=request.user
