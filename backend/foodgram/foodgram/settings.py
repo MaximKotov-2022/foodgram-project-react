@@ -76,11 +76,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = os.path.join('LANGUAGE_CODE', 'en-us')
-TIME_ZONE = os.path.join('TIME_ZONE', 'UTC')
-USE_I18N = os.path.join('USE_I18N', 'True')
-USE_L10N = os.path.join('USE_L10N', 'True')
-USE_TZ = os.path.join('USE_TZ', 'True')
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'en-us')
+TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
+USE_I18N = os.getenv('USE_I18N', True)
+USE_L10N = os.getenv('USE_L10N', True)
+USE_TZ = os.getenv('USE_TZ', True)
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
