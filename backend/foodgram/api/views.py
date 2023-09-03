@@ -120,6 +120,7 @@ class RecipeViewSet(ModelViewSet):
     @action(methods=['post', 'delete'], detail=True,
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
+        self.pagination_class = None
         user = request.user
         if request.method == 'POST':
             name = 'список покупок'
