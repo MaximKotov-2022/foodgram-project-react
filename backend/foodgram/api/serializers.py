@@ -5,7 +5,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Tag)
+                            Tag,
+                            ShoppingCart)
 
 from users.models import User
 from users.serializers import UserGetSerializer
@@ -53,17 +54,25 @@ class RecipeSerializer(RecipeSmallSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients',
                                              read_only=True,)
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
                   'name', 'image', 'text',
+                  'is_in_shopping_cart',
                   'cooking_time')
 
     def get_is_favorited(self, obj):
         """Статус - рецепт в избранном или нет."""
         user_id = self.context.get('request').user.id
         return Favorite.objects.filter(
+            user=user_id, recipe=obj.id).exists()
+
+    def get_is_favorited(self, obj):
+        """Статус - рецепт в избранном или нет."""
+        user_id = self.context.get('request').user.id
+        return ShoppingCart.objects.filter(
             user=user_id, recipe=obj.id).exists()
 
 
@@ -181,6 +190,19 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 queryset=Favorite.objects.all(),
                 fields=('user', 'recipe'),
                 message='Подписка уже существует.'
+            )
+        ]
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже в корзине.'
             )
         ]
 
