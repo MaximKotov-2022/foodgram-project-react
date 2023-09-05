@@ -50,17 +50,22 @@ class RecipeSerializer(RecipeSmallSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients',
                                              read_only=True,)
-
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart')
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
-                  'name', 'image', 'text', 'cooking_time')
+                  'name', 'image', 'text', 'is_in_shopping_cart',
+                  'cooking_time')
 
     def get_is_favorited(self, obj):
         """Статус - рецепт в избранном или нет."""
         user_id = self.context.get('request').user.id
         return Favorite.objects.filter(
             user=user_id, recipe=obj.id).exists()
+
+    def get_is_in_shopping_cart(self):
+        return self.is_in_shopping_cart.exists()
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
