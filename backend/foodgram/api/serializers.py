@@ -50,8 +50,7 @@ class RecipeSerializer(RecipeSmallSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients',
                                              read_only=True,)
-    is_in_shopping_cart = serializers.SerializerMethodField(
-        method_name='get_is_in_shopping_cart')
+    is_in_shopping_cart = SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -65,8 +64,12 @@ class RecipeSerializer(RecipeSmallSerializer):
         return Favorite.objects.filter(
             user=user_id, recipe=obj.id).exists()
 
-    def get_is_in_shopping_cart(self):
-        return self.is_in_shopping_cart.exists()
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get("request")
+        return (
+            not request.user.is_anonymous
+            and obj.cart.filter(user=request.user).exists()
+        )
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
