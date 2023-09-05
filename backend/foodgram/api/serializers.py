@@ -67,11 +67,9 @@ class RecipeSerializer(RecipeSmallSerializer):
             user=user_id, recipe=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get("request")
-        return (
-            not request.user.is_anonymous
-            and obj.cart.filter(user=request.user).exists()
-        )
+        user_id = self.context.get("request").user.id
+        return ShoppingCart.objects.filter(
+            user=user_id, recipe=obj.id).exists()
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
@@ -192,17 +190,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ]
 
 
-class SubscriptionsSerializer(UserGetSerializer):
-    recipes = RecipeSmallSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(source='recipes.count',
-                                             read_only=True)
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count',)
-
-
 class CartRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для добавления рецепта в корзину."""
 
@@ -216,3 +203,14 @@ class CartRecipeSerializer(serializers.ModelSerializer):
                 message="Рецепт уже помещен в корзину.",
             )
         ]
+
+
+class SubscriptionsSerializer(UserGetSerializer):
+    recipes = RecipeSmallSerializer(many=True, read_only=True)
+    recipes_count = serializers.IntegerField(source='recipes.count',
+                                             read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count',)
