@@ -53,13 +53,11 @@ class RecipeSerializer(RecipeSmallSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients',
                                              read_only=True,)
-    # is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
                   'name', 'image', 'text',
-                  # 'is_in_shopping_cart',
                   'cooking_time')
 
     def get_is_favorited(self, obj):
@@ -67,11 +65,6 @@ class RecipeSerializer(RecipeSmallSerializer):
         user_id = self.context.get('request').user.id
         return Favorite.objects.filter(
             user=user_id, recipe=obj.id).exists()
-
-    # def get_is_in_shopping_cart(self, obj):
-    #     user_id = self.context.get("request").user.id
-    #     return ShoppingCart.objects.filter(
-    #         user=user_id, recipe=obj.id).exists()
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
@@ -190,21 +183,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 message='Подписка уже существует.'
             )
         ]
-
-
-# class CartRecipeSerializer(serializers.ModelSerializer):
-#     """Сериализатор для добавления рецепта в корзину."""
-#
-#     class Meta:
-#         model = ShoppingCart
-#         fields = ("user", "recipe")
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=ShoppingCart.objects.all(),
-#                 fields=("user", "recipe"),
-#                 message="Рецепт уже помещен в корзину.",
-#             )
-#         ]
 
 
 class SubscriptionsSerializer(UserGetSerializer):
