@@ -52,6 +52,7 @@ class RecipeSerializer(RecipeSmallSerializer):
                                              read_only=True,)
     is_in_shopping_cart = serializers.SerializerMethodField(
         method_name='get_is_in_shopping_cart')
+
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
