@@ -191,19 +191,19 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ]
 
 
-class CartRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для добавления рецепта в корзину."""
-
-    class Meta:
-        model = ShoppingCart
-        fields = ("user", "recipe")
-        validators = [
-            UniqueTogetherValidator(
-                queryset=ShoppingCart.objects.all(),
-                fields=("user", "recipe"),
-                message="Рецепт уже помещен в корзину.",
-            )
-        ]
+# class CartRecipeSerializer(serializers.ModelSerializer):
+#     """Сериализатор для добавления рецепта в корзину."""
+#
+#     class Meta:
+#         model = ShoppingCart
+#         fields = ("user", "recipe")
+#         validators = [
+#             UniqueTogetherValidator(
+#                 queryset=ShoppingCart.objects.all(),
+#                 fields=("user", "recipe"),
+#                 message="Рецепт уже помещен в корзину.",
+#             )
+#         ]
 
 
 class SubscriptionsSerializer(UserGetSerializer):
