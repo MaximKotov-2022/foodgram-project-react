@@ -9,8 +9,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from api.serializers import (FavoriteSerializer, IngredientGetSerializer,
                              RecipeCreateSerializer,
                              RecipePartialUpdateSerializer, RecipeSerializer,
-                             RecipeSmallSerializer, TagSerializer,
-                             ShoppingCartSerializer)
+                             RecipeSmallSerializer, TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
