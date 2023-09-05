@@ -50,7 +50,7 @@ class RecipeSerializer(RecipeSmallSerializer):
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients',
                                              read_only=True,)
-    is_in_shopping_cart = SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
