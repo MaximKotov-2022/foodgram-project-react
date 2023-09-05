@@ -5,7 +5,9 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Tag, ShoppingCart)
+                            Tag,
+                            # ShoppingCart
+                            )
 
 from users.models import User
 from users.serializers import UserGetSerializer
