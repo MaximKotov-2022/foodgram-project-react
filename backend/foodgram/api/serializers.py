@@ -4,7 +4,9 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            Tag, ShoppingCart)
+
 from users.models import User
 from users.serializers import UserGetSerializer
 
@@ -199,3 +201,18 @@ class SubscriptionsSerializer(UserGetSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count',)
+
+
+class CartRecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для добавления рецепта в корзину."""
+
+    class Meta:
+        model = ShoppingCart
+        fields = ("user", "recipe")
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=("user", "recipe"),
+                message="Рецепт уже помещен в корзину.",
+            )
+        ]
