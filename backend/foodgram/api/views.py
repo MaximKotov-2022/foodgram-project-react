@@ -36,7 +36,6 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    # pagination_class = None
 
     def get_queryset(self):
         return Recipe.objects.prefetch_related(
