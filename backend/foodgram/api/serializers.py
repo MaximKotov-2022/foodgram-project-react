@@ -69,7 +69,7 @@ class RecipeSerializer(RecipeSmallSerializer):
         return Favorite.objects.filter(
             user=user_id, recipe=obj.id).exists()
 
-    def get_is_favorited(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         """Статус - рецепт в избранном или нет."""
         user_id = self.context.get('request').user.id
         return ShoppingCart.objects.filter(
