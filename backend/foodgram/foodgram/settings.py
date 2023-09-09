@@ -6,8 +6,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', "4y-q*uq1!4$-89$")
 DEBUG = os.getenv('DEBUG', '').lower() == 'true'
-# DEBUG = True
-# ALLOWED_HOSTS = ['158.160.0.169', '127.0.0.1', 'localhost', 'myfoodgram.zapto.org']
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(',')
 
 INSTALLED_APPS = [
