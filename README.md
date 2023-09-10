@@ -1,45 +1,24 @@
-Сайт: https://myfoodgram.zapto.org/
-логин: ad
-почта: ad@ad.ru
-пароль: ad
-
-
 # foodgram-project-react
-Дипломный проект. Приложение «Продуктовый помощник»: сайт, на котором
-пользователи будут публиковать рецепты, добавлять чужие рецепты в избранное и
-подписываться на публикации других авторов. Сервис «Список покупок» позволит
-пользователям создавать список продуктов, которые нужно купить для
-приготовления выбранных блюд.
+Дипломный проект. Приложение «Продуктовый помощник»: сайт, на котором пользователи будут публиковать рецепты, добавлять чужие рецепты в избранное и подписываться на публикации других авторов. Пользователям сайта также будет доступен сервис «Список покупок». Он позволит создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
 
-## Технологии
-+ Python
-+ Django
-+ Django REST Framework
-+ PostgreSQL
-+ Docker
-+ Github Actions
 
-## Как запустить проект:
+## Установка и запуск
 Клонировать репозиторий и перейти в него в командной строке:
-
 ```
 git clone https://github.com/MaximKotov-2022/foodgram-project-react
 ```
-
 ```
 cd foodgram-project-react
 ```
 
 Cоздать и активировать виртуальное окружение:
-
 ```
 python3 -m venv venv
 ```
 
 ```
-source venv/Scripts/activate
+source venv/bin/activate
 ```
-
 ```
 python -m pip install --upgrade pip
 ```
@@ -51,15 +30,16 @@ pip install -r requirements.txt
 ```
 
 Выполнить миграции:
-
-```
-python3 manage.py makemigrations
-```
 ```
 python3 manage.py migrate
 ```
 
-## Для запуска на собственном сервере:
+Запустить проект:
+```
+python3 manage.py runserver
+```
+
+## Запук на собственном сервере
 1. Скопируйте из репозитория файлы, расположенные в директории infra:
     - docker-compose.yml
     - nginx.conf
@@ -84,7 +64,7 @@ docker-compose exec backend python manage.py createsuperuser
 
 6. Для добавления ингредиентов в базу данных, выполните команду:
 ```
-docker-compose exec backend python manage.py add_data ingredients.csv tags_ingr_ingredient
+docker-compose exec backend python manage.py add_data ingredients.csv data_in_file
 ```
 После выполнения этих действий проект будет запущен и доступен по адресам:
 - Главная страница: http://<ip-адрес>/recipes/
@@ -102,5 +82,25 @@ DB_NAME=foodgram
 DB_HOST=databasee
 DB_PORT=1111
 
-## Автор
-Котов Максим
+
+## Техническое описание проекта
+### Ресурсы 
++ Главная
++ Страница рецепта
++ Страница пользователя
++ Страница подписок
++ Избранное
++ Список покупок
++ Создание и редактирование рецепта
+
+
+## Используемые технологии
++ Python
++ Django
++ PostgreSQL
++ Docker
++ Github Actions
+
+
+## Авторы
++ **Котов Максим** [MaximKotov-2022](https://github.com/MaximKotov-2022)
